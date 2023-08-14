@@ -1,0 +1,97 @@
+import os
+import tkinter as tk
+from tkinter import filedialog
+import pygame
+
+class MusicPlayerApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Music Player")
+        
+        self.playlist = []
+        self.current_track = 0
+        self.playing = False
+        
+        self.create_ui()
+        
+    def create_ui(self):
+        
+        self.playlistbox = tk.Listbox(self.root, selectmode=tk.SINGLE)
+        self.playlistbox.pack(fill=tk.BOTH, expand=True)
+        
+        self.add_button = tk.Button(self.root, text="Add Songs", command=self.add_songs)
+        self.add_button.pack()
+        
+        self.play_button = tk.Button(self.root, text="Play", command=self.play)
+        self.play_button.pack()
+        
+        self.stop_button = tk.Button(self.root, text="Stop", command=self.stop)
+        self.stop_button.pack()
+        
+        self.next_button = tk.Button(self.root, text="Next", command=self.play_next)
+        self.next_button.pack()
+        
+        self.prev_button = tk.Button(self.root, text="Previous", command=self.play_previous)
+        self.prev_button.pack()
+        
+        self.volume_label = tk.Label(self.root, text="Volume:")
+        self.volume_label.pack()
+        
+        self.volume_slider = tk.Scale(self.root, from_=0, to=100, orient=tk.HORIZONTAL, command=self.set_volume)
+        self.volume_slider.set(70)  # Initial volume value
+        self.volume_slider.pack()
+        
+        self.current_track_label = tk.Label(self.root, text="")
+        self.current_track_label.pack()
+        
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        
+        pygame.init()
+        pygame.mixer.init()
+
+    def add_songs(self):
+        files = filedialog.askopenfilenames(filetypes=[("Audio Files", "*.mp3 *.wav")])
+        for file in files:
+            self.playlist.append(file)
+            self.playlistbox.insert(tk.END, os.path.basename(file))
+    
+    def play(self):
+        if not self.playing and self.playlist:
+            self.play_current_track()
+    
+    def stop(self):
+        if self.playing:
+            pygame.mixer.music.stop()
+            self.playing = False
+    
+    def play_next(self):
+        if self.playlist and self.current_track < len(self.playlist) - 1:
+            self.current_track += 1
+            self.play_current_track()
+    
+    def play_previous(self):
+        if self.playlist and self.current_track > 0:
+            self.current_track -= 1
+            self.play_current_track()
+    
+    def play_current_track(self):
+        if self.playing:
+            pygame.mixer.music.stop()
+        
+        pygame.mixer.music.load(self.playlist[self.current_track])
+        pygame.mixer.music.play()
+        self.playing = True
+        self.current_track_label.config(text="Now Playing: " + os.path.basename(self.playlist[self.current_track]))
+    
+    def set_volume(self, volume):
+        pygame.mixer.music.set_volume(int(volume) / 100.0)
+    
+    def on_closing(self):
+        if self.playing:
+            pygame.mixer.music.stop()
+        self.root.destroy()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = MusicPlayerApp(root)
+    root.mainloop()
