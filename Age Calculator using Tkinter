@@ -1,0 +1,64 @@
+import tkinter as tk
+from tkinter import messagebox
+from datetime import datetime, timedelta
+
+class AgeCalculatorApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Age Calculator")
+
+        self.create_ui()
+
+    def create_ui(self):
+
+
+        # Title Label
+        title_label = tk.Label(self.root, text="Age Calculator", font=("Helvetica", 20, "bold"), bg="#F2E7D5")
+        title_label.pack(pady=20)
+
+        # Birthdate Entry
+        birthdate_label = tk.Label(self.root, text="Enter your birthdate (YYYY-MM-DD):", bg="#F2E7D5")
+        birthdate_label.pack()
+
+        self.birthdate_entry = tk.Entry(self.root, font=("Helvetica", 12))
+        self.birthdate_entry.pack(pady=5)
+
+        # Calculate Button
+        calculate_button = tk.Button(self.root, text="Calculate Age", command=self.calculate_age, bg="#3E8D7F", fg="white", font=("Helvetica", 12))
+        calculate_button.pack(pady=10)
+
+        # Age Display Label
+        self.age_label = tk.Label(self.root, text="", font=("Helvetica", 14), bg="#F2E7D5")
+        self.age_label.pack()
+
+    def calculate_age(self):
+        try:
+            birthdate_str = self.birthdate_entry.get()
+            birthdate = datetime.strptime(birthdate_str, "%Y-%m-%d")
+            today = datetime.today()
+
+            age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+
+            if today.month < birthdate.month or (today.month == birthdate.month and today.day < birthdate.day):
+                age -= 1
+
+            birth_month = birthdate.month
+            birth_day = birthdate.day
+
+            if today.day < birth_day:
+                birth_month -= 1
+
+            months = (today.year - birthdate.year) * 12 + (today.month - birth_month)
+            days = (today - birthdate.replace(year=today.year, month=birth_month)).days
+
+            self.age_label.config(text=f"Your age is: {age} years, {months} months, and {days} days")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid date format. Please use YYYY-MM-DD.")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = AgeCalculatorApp(root)
+    root.configure(bg="#F2E7D5")  # Set background color
+    root.geometry("400x300")  # Set window size
+    root.resizable(False, False)  # Disable window resizing
+    root.mainloop()
